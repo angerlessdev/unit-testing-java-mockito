@@ -6,6 +6,8 @@ import org.angel.appmockito.ejemplos.repositories.QuestionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -25,6 +27,8 @@ class ExamServiceImplTest {
     QuestionRepository questionRepository;
     @InjectMocks
     ExamServiceImpl service;
+    @Captor
+    ArgumentCaptor<Long> captor;
 
     @BeforeEach
     void setUp() {
@@ -140,6 +144,18 @@ class ExamServiceImplTest {
 
         verify(examRepository).findAll();
         verify(questionRepository).findQuestionsByExamId(argThat(arg -> arg.equals(5L)));
+    }
+
+    @Test
+    void testArgumentCaptor() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        //when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+
+        service.findExamByNameWithQuestions("Mate");
+
+        verify(questionRepository).findQuestionsByExamId(captor.capture());
+
+        assertEquals(5L, captor.getValue());
     }
 }
 
