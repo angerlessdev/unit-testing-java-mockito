@@ -1,0 +1,108 @@
+package org.angel.appmockito.ejemplos.services;
+
+import org.angel.appmockito.ejemplos.models.Exam;
+import org.angel.appmockito.ejemplos.repositories.ExamRepository;
+import org.angel.appmockito.ejemplos.repositories.QuestionRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ExamServiceImplTest {
+    @Mock
+    ExamRepository examRepository;
+    @Mock
+    QuestionRepository questionRepository;
+    @InjectMocks
+    ExamServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        // repository = mock(ExamRepository.class);
+        // questionRepository = mock(QuestionRepository.class);
+        // service = new ExamServiceImpl(repository, questionRepository);
+    }
+
+    @Test
+    void findExamByName() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        Optional<Exam> exam = service.findExamByName("Mate");
+
+        assertTrue(exam.isPresent());
+        assertEquals("Mate", exam.get().getName());
+        assertEquals(5L, exam.orElseThrow().getId());
+
+    }
+
+    @Test
+    void findExamByNameEmpty() {
+        List<Exam> exams = Collections.emptyList();
+
+        when(examRepository.findAll()).thenReturn(exams);
+        Optional<Exam> exam = service.findExamByName("Mate");
+
+        assertTrue(exam.isEmpty());
+    }
+
+    @Test
+    void testQuestionsExam() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(5L)).thenReturn(Data.QUESTIONS);
+
+        Exam exam = service.findExamByNameWithQuestions("Mate");
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Trigonometry"));
+    }
+
+    @Test
+    void testQuestionsExamVerify() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(5L)).thenReturn(Data.QUESTIONS);
+
+        Exam exam = service.findExamByNameWithQuestions("Mate");
+        assertEquals(5, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Trigonometry"));
+
+        // Verificación de interacciones
+        verify(examRepository).findAll();                     // se llamó al repo de exámenes
+        verify(questionRepository).findQuestionsByExamId(5L); // se pidió la lista de preguntas del examen con id=5
+                                                              // o usar anyLong()
+    }
+
+    @Test
+    void testSaveExam() {
+
+        Exam newExam = Data.EXAM;
+        newExam.setQuestions(Data.QUESTIONS);
+
+        when(examRepository.save(any(Exam.class))).thenReturn(Data.EXAM);
+        // Exam exam = service.save(new Exam(8L, "Physics"));
+        Exam exam = service.save(newExam);
+
+        assertNotNull(exam.getId());
+        assertEquals("Physics", exam.getName());
+        assertEquals(8L, exam.getId());
+        verify(examRepository).save(any(Exam.class));
+        verify(questionRepository).saveQuestions(anyList());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
