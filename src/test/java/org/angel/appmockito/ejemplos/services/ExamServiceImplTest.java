@@ -131,6 +131,16 @@ class ExamServiceImplTest {
 
         assertEquals(IllegalArgumentException.class, exception.getClass());
     }
+
+    @Test
+    void testArgumentMatchers(){
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+        service.findExamByNameWithQuestions("Mate");
+
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionsByExamId(argThat(arg -> arg.equals(5L)));
+    }
 }
 
 
