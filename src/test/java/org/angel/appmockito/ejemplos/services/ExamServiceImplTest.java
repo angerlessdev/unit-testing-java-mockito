@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
@@ -79,14 +81,25 @@ class ExamServiceImplTest {
 
     @Test
     void testSaveExam() {
-
+        // BDD
+        // Given
         Exam newExam = Data.EXAM;
         newExam.setQuestions(Data.QUESTIONS);
 
-        when(examRepository.save(any(Exam.class))).thenReturn(Data.EXAM);
+        when(examRepository.save(any(Exam.class))).then(new Answer<Exam>() {
+            Long sequence = 8L;
+            @Override
+            public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Exam exam = invocationOnMock.getArgument(0);
+                exam.setId(sequence++);
+                return exam;
+            }
+        });
         // Exam exam = service.save(new Exam(8L, "Physics"));
+        // When
         Exam exam = service.save(newExam);
 
+        // Then
         assertNotNull(exam.getId());
         assertEquals("Physics", exam.getName());
         assertEquals(8L, exam.getId());
