@@ -106,6 +106,31 @@ class ExamServiceImplTest {
         verify(examRepository).save(any(Exam.class));
         verify(questionRepository).saveQuestions(anyList());
     }
+
+    @Test
+    void testHandlingException() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        when(questionRepository.findQuestionsByExamId(anyLong())).thenThrow(IllegalArgumentException.class);
+
+        Exception exception = assertThrows(IllegalArgumentException.class,
+                () -> service.findExamByNameWithQuestions("Mate"));
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+        verify(examRepository).findAll();
+        verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testHandlingExceptionNullId() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS_ID_NULL);
+        // Any argument that is null will throw IllegalArgumentException
+        when(questionRepository.findQuestionsByExamId(isNull())).thenThrow(IllegalArgumentException.class);
+
+        Exception exception = assertThrows(IllegalArgumentException.class,
+                () -> service.findExamByNameWithQuestions("Mate"));
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+    }
 }
 
 
