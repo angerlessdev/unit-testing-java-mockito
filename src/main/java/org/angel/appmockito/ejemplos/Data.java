@@ -1,4 +1,4 @@
-package org.angel.appmockito.ejemplos.services;
+package org.angel.appmockito.ejemplos;
 
 import org.angel.appmockito.ejemplos.models.Exam;
 
