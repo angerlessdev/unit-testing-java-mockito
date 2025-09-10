@@ -273,6 +273,20 @@ class ExamServiceImplTest {
         inOrder.verify(examRepository).findAll();
         inOrder.verify(questionRepository).findQuestionsByExamId(6L);
     }
+
+    @Test
+    void testCallCount() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        service.findExamByNameWithQuestions("Mate");
+
+        verify(questionRepository).findQuestionsByExamId(5L);
+        verify(questionRepository, times(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atLeast(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atLeastOnce()).findQuestionsByExamId(5L);
+        verify(questionRepository, atMost(1)).findQuestionsByExamId(5L);
+        verify(questionRepository, atMostOnce()).findQuestionsByExamId(5L);
+
+    }
 }
 
 
