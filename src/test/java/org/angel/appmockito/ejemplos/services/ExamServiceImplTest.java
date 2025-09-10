@@ -1,8 +1,11 @@
 package org.angel.appmockito.ejemplos.services;
 
+import org.angel.appmockito.ejemplos.Data;
 import org.angel.appmockito.ejemplos.models.Exam;
 import org.angel.appmockito.ejemplos.repositories.ExamRepository;
+import org.angel.appmockito.ejemplos.repositories.ExamRepositoryImpl;
 import org.angel.appmockito.ejemplos.repositories.QuestionRepository;
+import org.angel.appmockito.ejemplos.repositories.QuestionRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +25,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ExamServiceImplTest {
     @Mock
-    ExamRepository examRepository;
+    ExamRepositoryImpl examRepository;
     @Mock
-    QuestionRepository questionRepository;
+    QuestionRepositoryImpl questionRepository;
     @InjectMocks
     ExamServiceImpl service;
     @Captor
@@ -212,6 +215,17 @@ class ExamServiceImplTest {
         assertEquals(8L, exam.getId());
         verify(examRepository).save(any(Exam.class));
         verify(questionRepository).saveQuestions(anyList());
+    }
+
+    @Test
+    void testDoCallRealMethod() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        //when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+        doCallRealMethod().when(questionRepository).findQuestionsByExamId(anyLong());
+
+        Exam exam = service.findExamByNameWithQuestions("Mate");
+        assertEquals(5L, exam.getQuestions().size());
+        assertEquals("Mate", exam.getName());
     }
 }
 
