@@ -9,10 +9,7 @@ import org.angel.appmockito.ejemplos.repositories.QuestionRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -249,6 +246,32 @@ class ExamServiceImplTest {
 
         verify(examRepository).findAll(); // Real
         verify(questionRepository).findQuestionsByExamId(anyLong()); // Simulate
+    }
+
+    @Test
+    void testCallOrder() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+
+        service.findExamByNameWithQuestions("Mate");
+        service.findExamByNameWithQuestions("Language");
+
+        InOrder inOrder = inOrder(questionRepository);
+        inOrder.verify(questionRepository).findQuestionsByExamId(5L);
+        inOrder.verify(questionRepository).findQuestionsByExamId(6L);
+    }
+
+    @Test
+    void testCallOrder2() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+
+        service.findExamByNameWithQuestions("Mate");
+        service.findExamByNameWithQuestions("Language");
+
+        InOrder inOrder = inOrder(examRepository, questionRepository);
+        inOrder.verify(examRepository).findAll();
+        inOrder.verify(questionRepository).findQuestionsByExamId(5L);
+        inOrder.verify(examRepository).findAll();
+        inOrder.verify(questionRepository).findQuestionsByExamId(6L);
     }
 }
 
