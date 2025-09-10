@@ -227,6 +227,29 @@ class ExamServiceImplTest {
         assertEquals(5L, exam.getQuestions().size());
         assertEquals("Mate", exam.getName());
     }
+
+    @Test
+    void testSpy() {
+        // ExamRepository examRepository = mock(ExamRepository.class);
+        ExamRepository examRepository = spy(ExamRepositoryImpl.class);
+        QuestionRepository questionRepository = spy(QuestionRepositoryImpl.class);
+        ExamService examService = new ExamServiceImpl(examRepository, questionRepository);
+
+        List<String> questions = Arrays.asList("Mate");
+        // when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(questions);
+
+        // If you doReturn or doAnswer, you can override the behavior to simulate something.
+        doReturn(questions).when(questionRepository).findQuestionsByExamId(anyLong());
+
+        Exam exam = examService.findExamByNameWithQuestions("Mate");
+        assertEquals(5, exam.getId());
+        assertEquals("Mate", exam.getName());
+        assertEquals(1, exam.getQuestions().size());
+        assertTrue(exam.getQuestions().contains("Mate"));
+
+        verify(examRepository).findAll(); // Real
+        verify(questionRepository).findQuestionsByExamId(anyLong()); // Simulate
+    }
 }
 
 
