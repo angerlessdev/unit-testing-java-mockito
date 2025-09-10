@@ -167,6 +167,52 @@ class ExamServiceImplTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.save(exam));
     }
+
+    @Test
+    void testDoAnswer() {
+        when(examRepository.findAll()).thenReturn(Data.EXAMS);
+        // when(questionRepository.findQuestionsByExamId(anyLong())).thenReturn(Data.QUESTIONS);
+        doAnswer(invocation -> {
+            Long id = invocation.getArgument(0); // PARAMETER POSITION
+            return id == 5L? Data.QUESTIONS : null;
+        }).when(questionRepository).findQuestionsByExamId(anyLong());
+
+        Exam exam = service.findExamByNameWithQuestions("Language");
+
+        assertEquals(5, exam.getQuestions().size());
+        assertEquals(5L, exam.getId());
+        assertEquals("Mate", exam.getName());
+
+        verify(questionRepository).findQuestionsByExamId(anyLong());
+    }
+
+    @Test
+    void testDoAnswerSaveExam() {
+        // BDD
+        // Given
+        Exam newExam = Data.EXAM;
+        newExam.setQuestions(Data.QUESTIONS);
+
+        doAnswer(new Answer<Exam>() {
+            Long sequence = 8L;
+            @Override
+            public Exam answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Exam exam = invocationOnMock.getArgument(0);
+                exam.setId(sequence++);
+                return exam;
+            }
+        }).when(examRepository).save(any(Exam.class));
+        // Exam exam = service.save(new Exam(8L, "Physics"));
+        // When
+        Exam exam = service.save(newExam);
+
+        // Then
+        assertNotNull(exam.getId());
+        assertEquals("Physics", exam.getName());
+        assertEquals(8L, exam.getId());
+        verify(examRepository).save(any(Exam.class));
+        verify(questionRepository).saveQuestions(anyList());
+    }
 }
 
 
